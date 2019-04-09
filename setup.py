@@ -19,6 +19,6 @@ setup(
     auther_email='sunkaihuisos@gmail.com',
     license='2 Clause BSD',
     packages=find_packages(),
-    install_requires=['pgcontents', 'sqlalchemy'],
+    install_requires=['pgcontents', 'sqlalchemy', 'pandas'],
     include_package_data=True,
 )

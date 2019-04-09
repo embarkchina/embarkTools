@@ -1,10 +1,14 @@
 import os
+from io import StringIO
 from base64 import b64decode, b64encode
 
 from sqlalchemy import create_engine
 from pgcontents.api_utils import split_api_filepath, to_b64
 from pgcontents.query import get_file, save_file
 from pgcontents import crypto
+
+import pandas as pd
+from pandas.core.frame import DataFrame
 
 
 def get_engine():
@@ -44,3 +48,24 @@ def save(data, path, format='text'):
             crypto.NoEncryption().encrypt,
             0
         )
+
+
+def read_csv(path, **kwargs):
+    """读取csv, 返回 `pandas.core.frame.DataFrame`"""
+    data = read(path)
+    return pd.read_csv(
+        StringIO(data.decode("utf-8")),
+        **kwargs
+    )
+
+
+def save_csv(df, path, **kwargs):
+    """存储csv文件, 可以是`DataFrame` 或者 `str` 类型"""
+    data = None
+    if isinstance(df, DataFrame):
+        data = df.to_csv(**kwargs)
+    elif isinstance(df, str):
+        data = df
+    else:
+        return "data type must be `DataFrame` or `str`"
+    save(data, path)
