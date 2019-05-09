@@ -10,6 +10,8 @@ from pgcontents import crypto
 import pandas as pd
 from pandas.core.frame import DataFrame
 
+from .utils import rela2abs
+
 
 def get_engine():
     return create_engine(os.environ.get("PGCONTENTS_DB_URL"), echo=False)
@@ -18,6 +20,9 @@ def get_engine():
 def read(path):
     """读取路径下的文件"""
     user_id = os.environ.get("JUPYTERHUB_USER") or ""
+    if not path.startswith("/"):
+        path = rela2abs(path)
+
     with get_engine().begin() as db:
         src_file = get_file(
             db,
@@ -34,6 +39,8 @@ def save(data, path, format='text'):
     if format not in ['text', 'base64', 'bytes']:
         print("Unexcept format type: %s." % (format))
         return
+    if not path.startswith("/"):
+        path = rela2abs(path)
     directory, name = split_api_filepath(path)
     user_id = os.environ.get("JUPYTERHUB_USER") or ""
 
@@ -52,6 +59,8 @@ def save(data, path, format='text'):
 
 def read_csv(path, **kwargs):
     """读取csv, 返回 `pandas.core.frame.DataFrame`"""
+    if not path.startswith("/"):
+        path = rela2abs(path)
     data = read(path)
     return pd.read_csv(
         StringIO(data.decode("utf-8")),
@@ -61,6 +70,8 @@ def read_csv(path, **kwargs):
 
 def save_csv(df, path, **kwargs):
     """存储csv文件, 可以是`DataFrame` 或者 `str` 类型"""
+    if not path.startswith("/"):
+        path = rela2abs(path)
     data = None
     if isinstance(df, DataFrame):
         data = df.to_csv(**kwargs)
